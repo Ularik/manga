@@ -1,4 +1,4 @@
-
+from manga.models import Manga
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 
@@ -40,6 +40,7 @@ class MyUser(AbstractBaseUser):
         ),
         default=1
     )
+    bookmarks = models.ManyToManyField(Manga)
     created_date = models.DateTimeField(
         auto_now_add=True
     )
@@ -52,6 +53,7 @@ class MyUser(AbstractBaseUser):
         return self.name
 
     # Дополнительные методы и свойства
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
