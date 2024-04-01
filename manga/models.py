@@ -1,13 +1,12 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 
 class Rating(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     manga = models.ForeignKey(
         'Manga',
@@ -27,7 +26,7 @@ class Likes(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorites'
+        related_name='favorites',
     )
     manga = models.ForeignKey(
         'Manga',
@@ -37,6 +36,9 @@ class Likes(models.Model):
     created_date = models.DateTimeField(
         auto_now_add=True
     )
+
+    def __str__(self):
+        return f'{self.user} -> {self.manga}'
 
 
 class Comments(models.Model):
@@ -58,6 +60,9 @@ class Genre(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
 
+    def __str__(self):
+        return self.title
+
 
 class Image(models.Model):
     file = models.ImageField(upload_to='media/mangas/')
@@ -73,7 +78,18 @@ class Manga(models.Model):
     )
     description = models.TextField()
     genre = models.ManyToManyField(Genre)
-    images = models.ManyToManyField(Image)
+    images = models.ImageField(
+        upload_to='media/cover',
+        null=True,
+        blank=True
+    )
+    grades = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    comix_file = models.FileField(upload_to='media/comix')
     created_date = models.DateTimeField(
         auto_now_add=True
     )
@@ -81,8 +97,11 @@ class Manga(models.Model):
         auto_now=True
     )
 
+    def __str__(self):
+        return self.title
 
-class WatchManga(models.Model):
+
+class Watched(models.Model):
     manga = models.ForeignKey(
         Manga,
         on_delete=models.CASCADE,
@@ -91,3 +110,18 @@ class WatchManga(models.Model):
     created_date = models.DateTimeField(
         auto_now=True
     )
+
+
+class Bookmarks(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    manga = models.ForeignKey(
+        Manga,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+
+    def __str__(self):
+        return f'{self.user.name}: {self.manga.title}'
