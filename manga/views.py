@@ -3,7 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView, Response, status
-from .models import Manga, Rating, Bookmarks, Comments, Likes
+from .models import Manga, Rating, Bookmarks, Comments, Likes, User
 from .serializers import MangaCreateSerializer, MangaListSerializer, MangaDetailSerializer, LikesCreateSerializer, \
     RatingCreateSerializer, WatchedCreateSerializer, CommentCreateSerializer, BookmarksSerializer
 from .filters import MangaListFilters
@@ -65,6 +65,24 @@ class MangaDetailView(APIView):
             return Response(serializer.data, status.HTTP_201_CREATED)
 
         return Response(status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+
+        admin = User.objects.filter(pk=request.user.id).first()
+        manga = Manga.objects.filter(pk=pk).first()
+        author = manga.user.id
+
+        if admin != author:
+            return Response('Only author can change his manga', status.HTTP_403_FORBIDDEN)
+
+        serializer = MangaDetailSerializer(manga, context={'request': request})
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status.HTTP_205_RESET_CONTENT)
+
+        return Response(status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request, pk):
 
